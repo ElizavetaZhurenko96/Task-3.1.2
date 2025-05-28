@@ -7,12 +7,28 @@
 <body>
 <h1>User Profile</h1>
 
-<p><strong>Name:</strong> <span th:text="${user.name}"></span></p>
-<p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
-<p><strong>Age:</strong> <span th:text="${user.age}"></span></p>
-<p><strong>Password</strong> <span th:text="${user.password}"></span></p>
-<p><strong>Roles:</strong> <span th:each="role : ${user.roles}" th:text="${role.roleType} + ' '"></span></p>
-
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Age</th>
+        <th>Password</th>
+        <th>Authority</th>
+    </tr>
+    <tr>
+        <td th:text="${user.id}"></td>
+        <td th:text="${user.name}"></td>
+        <td th:text="${user.email}"></td>
+        <td th:text="${user.age}"></td>
+        <td th:text="${user.password}"></td>
+        <td>
+            <span th:each="role, iterStat : ${user.roles}">
+                <span th:text="${role.authority}"></span><span th:if="${!iterStat.last}">, </span>
+            </span>
+        </td>
+    </tr>
+</table>
 <a th:href="@{/logout}">Logout</a>
 </body>
 </html>

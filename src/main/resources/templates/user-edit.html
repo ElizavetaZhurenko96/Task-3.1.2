@@ -7,8 +7,7 @@
 </head>
 <body>
 <h1>Edit User</h1>
-
-<form th:action="@{'/update/{id}/' + ${user.id}}" th:object="${user}" method="post">
+<form th:action="@{'/admin/update/' + ${user.id}}" th:object="${user}" method="post">
     <input type="hidden" th:field="*{id}"/>
     <label>Name: <input type="text" th:field="*{name}"/></label><br>
     <label>Email: <input type="email" th:field="*{email}"/></label><br>
@@ -16,18 +15,16 @@
     <label>Password: <input type="password" th:field="*{password}"/></label><br>
 
     <label>Roles:
-        <select name="roles" multiple="multiple">
+        <select th:field="*{roles}" multiple="multiple" size="4">
             <option th:each="role : ${allRoles}"
-                    th:value="${role.name}"
-                    th:text="${role.name}"
-                    th:selected="${user.roles.contains(role)}">
+                    th:value="${role.id}"
+                    th:text="${role.authority}">
             </option>
         </select>
     </label><br>
-
     <button type="submit">Update</button>
 </form>
-
 <a th:href="@{/admin}">Back to List</a>
+<a th:href="@{/logout}">Logout</a>
 </body>
 </html>

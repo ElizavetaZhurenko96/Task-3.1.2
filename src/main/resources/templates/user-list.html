@@ -9,7 +9,6 @@
 <h1>Users</h1>
 
 <a th:href="@{/admin/new/}">Add New User</a>
-
 <table border="1">
     <tr>
         <th>ID</th>
@@ -17,6 +16,7 @@
         <th>Email</th>
         <th>Age</th>
         <th>Password</th>
+        <th>Authority</th>
         <th>Actions</th>
     </tr>
     <tr th:each="user : ${users}">
@@ -24,12 +24,17 @@
         <td th:text="${user.name}"></td>
         <td th:text="${user.email}"></td>
         <td th:text="${user.age}"></td>
-        <td th:text="${user.password}"></td>>
+        <td th:text="${user.password}"></td>
         <td>
-            <form th:action="@{'/admin/edit/' + ${user.id}}" method="get" style="display:inline;">
+  <span th:each="role, iterStat : ${user.roles}">
+    <span th:text="${role.authority}"></span><span th:if="${!iterStat.last}">, </span>
+  </span>
+        </td>
+        <td>
+            <form th:action="@{'/admin/update/' + ${user.id}}" method="get" style="display:inline;">
                 <button type="submit">Edit</button>
             </form>
-            <form th:action="@{'/delete/' + ${user.id}}" method="post" th:object="${user}" style="display:inline;">
+            <form th:action="@{'/admin/delete/' + ${user.id}}" method="post" th:object="${user}" style="display:inline;">
                 <button type="submit">Delete</button>
             </form>
         </td>
