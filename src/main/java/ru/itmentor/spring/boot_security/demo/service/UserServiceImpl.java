@@ -2,47 +2,87 @@ package ru.itmentor.spring.boot_security.demo.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import ru.itmentor.spring.boot_security.demo.dto.UserDto;
+import ru.itmentor.spring.boot_security.demo.model.Role;
 import ru.itmentor.spring.boot_security.demo.model.User;
+import ru.itmentor.spring.boot_security.demo.repository.RoleRepository;
 import ru.itmentor.spring.boot_security.demo.repository.UserRepository;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void saveUser(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+    public void saveUser(UserDto userDto) {
+        User user = new User();
+        user.setName(userDto.getName());
+        user.setEmail(userDto.getEmail());
+        user.setAge(userDto.getAge());
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        List<Role> roles = userDto.getRoles().stream()
+                .map(roleType -> roleRepository.findByAuthority(roleType)
+                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleType)))
+                .collect(Collectors.toList());
+        user.setRoles(roles);
         userRepository.save(user);
     }
 
-    public Optional<User> getUserByName(String name) {
-        return userRepository.findByUsernameWithRoles(name);
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    public UserDto getUserByName(String name) {
+        User currentUser = userRepository.findByUsernameWithRoles(name).get();
+        UserDto currentUserDto = new UserDto();
+        currentUserDto.setId(currentUser.getId());
+        currentUserDto.setName(currentUser.getName());
+        currentUserDto.setEmail(currentUser.getEmail());
+        currentUserDto.setAge(currentUser.getAge());
+        currentUserDto.setPassword(currentUser.getPassword());
+        currentUserDto.setRoles(
+                currentUser.getRoles().stream()
+                        .map(Role::getAuthorityEnum)
+                        .collect(Collectors.toList())
+        );
+        return currentUserDto;
     }
 
-    public Optional<User> getUserByID(Long id) {
-        return userRepository.getUserById(id);
+    public List<UserDto> getAllUsers() {
+        return userRepository.findAllWithRoles()
+                .stream().map(user -> new UserDto(
+                        user.getId(),
+                        user.getName(),
+                        user.getEmail(),
+                        user.getAge(),
+                        user.getPassword(),
+                        user.getRoles().stream()
+                                .map(Role::getAuthorityEnum)
+                                .collect(Collectors.toList())
+                )).collect(Collectors.toList());
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAllWithRoles();
-    }
+    public void updateUser(UserDto updatedUserDto, Long id) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id " + id));
 
-    public void updateUser(User updatedUser) {
-        if (userRepository.existsById(updatedUser.getId())) {
-            updatedUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
-            userRepository.save(updatedUser);
-        } else {
-            throw new RuntimeException("User not found with id " + updatedUser.getId());
-        }
+        existingUser.setName(updatedUserDto.getName());
+        existingUser.setEmail(updatedUserDto.getEmail());
+        existingUser.setAge(updatedUserDto.getAge());
+        existingUser.setPassword(passwordEncoder.encode(updatedUserDto.getPassword()));
+        List<Role> roles = updatedUserDto.getRoles().stream()
+                .map(roleType -> roleRepository.findByAuthority(roleType)
+                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleType)))
+                .collect(Collectors.toList());
+        existingUser.setRoles(roles);
+        userRepository.save(existingUser);
     }
 
     public void deleteUser(Long id) {
