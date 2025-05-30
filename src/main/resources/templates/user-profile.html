@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User Info</title>
+</head>
+<body>
+<h1>User Profile</h1>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Age</th>
+        <th>Password</th>
+        <th>Authority</th>
+    </tr>
+    <tr>
+        <td th:text="${user.id}"></td>
+        <td th:text="${user.name}"></td>
+        <td th:text="${user.email}"></td>
+        <td th:text="${user.age}"></td>
+        <td th:text="${user.password}"></td>
+        <td>
+            <span th:each="role, iterStat : ${user.roles}">
+                <span th:text="${role.authority}"></span><span th:if="${!iterStat.last}">, </span>
+            </span>
+        </td>
+    </tr>
+</table>
+<a th:href="@{/logout}">Logout</a>
+</body>
+</html>
